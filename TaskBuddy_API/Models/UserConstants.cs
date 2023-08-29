@@ -2,9 +2,15 @@
 {
     public class UserConstants
     {
-        public static List<User> Users = new List<User>()
+        public static List<UserModel> Users = new List<UserModel>()
         {
-            new User() { EmailAddress = "abc@gmail.com", Password = "MyPass_w0rd", Username = "Abc"},
+            new UserModel()
+            {
+                Id = "U-00000000000000000000000000000000",
+                GoogleUserId = "000000000000000000000",
+                Email = "Test@test.com",
+                UserName = "Test"
+            },
         };
     }
 }

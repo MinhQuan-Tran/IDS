@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">TaskBuddy</string>
-    <string name="title_activity_main">TaskBuddy</string>
-    <string name="package_name">net.IDS.app</string>
-    <string name="custom_url_scheme">net.IDS.app</string>
-</resources>
