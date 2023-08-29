@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using TaskBuddy_API.Models;
 
@@ -57,6 +58,34 @@ namespace TaskBuddy_API.Controllers
 
             // Redirect the user to the specified URL or a default page
             return LocalRedirect(returnUrl);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("PasswordLogin")]
+        public IActionResult PasswordLogin(UserLogin userLogin)
+        {
+            if (userLogin == null)
+            {
+                return Unauthorized("Missing user info!");
+            }
+
+            var foundUser = UserConstants.Users.FirstOrDefault(u => u.Email == userLogin.Email && u.Password == userLogin.Password);
+
+            if (foundUser == null)
+            {
+                return Unauthorized("User not found!");
+            }
+
+            return Ok(foundUser);
+        }
+
+        public class UserLogin
+        {
+            [Required]
+            public string Email { get; set; }
+
+            [Required]
+            public string Password { get; set; }
         }
     }
 }

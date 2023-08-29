@@ -11,6 +11,13 @@
                 Email = "Test@test.com",
                 UserName = "Test"
             },
+            new UserModel()
+            {
+                Id = "U-99999999999999999999999999999999",
+                Password = "Test",
+                Email = "Test@test.com",
+                UserName = "Test"
+            },
         };
     }
 }
