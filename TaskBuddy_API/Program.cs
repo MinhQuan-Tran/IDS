@@ -33,6 +33,15 @@ builder.Services.AddAuthentication(options =>
         googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
     });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowOrigin", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
@@ -50,5 +59,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseCors("AllowOrigin");
 
 app.Run();

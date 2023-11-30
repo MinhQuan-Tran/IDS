@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
 using TaskBuddy_API.Models;
 
 namespace TaskBuddy_API.Controllers
@@ -20,72 +18,80 @@ namespace TaskBuddy_API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("GoogleCallback")]
-        public async Task<IActionResult> GoogleCallback(string returnUrl = "/")
+        [HttpPost("GoogleLogin")]
+        public async Task<IActionResult> GoogleLogin([FromBody] string credential)
         {
-            var authenticateResult = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            var payload = await GoogleJsonWebSignature.ValidateAsync(credential);
 
-            if (!authenticateResult.Succeeded)
+            if (payload == null)
             {
-                return Unauthorized("Authentication not success!");
+                return Unauthorized("Invalid Google credentials!");
             }
 
-            var userEmail = authenticateResult.Principal.FindFirstValue(ClaimTypes.Email);
-            var userName = authenticateResult.Principal.FindFirstValue(ClaimTypes.Name);
-            var googleUserId = authenticateResult.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (userEmail.DefaultIfEmpty() == null || userName.DefaultIfEmpty() == null || googleUserId.DefaultIfEmpty() == null)
-            {
-                return Unauthorized("Missing email, user name or user id!");
-            }
+            var googleUserId = payload.AudienceAsList.FirstOrDefault();
 
             // Check if the user already exists in your database
-            var existingUser = UserConstants.Users.FirstOrDefault(u => u.GoogleUserId == googleUserId);
+            var foundUser = UserConstants.Users.FirstOrDefault(u => u.GoogleUserId == googleUserId);
 
-            if (existingUser == null)
+            if (foundUser == null)
             {
                 // Create a new user if they don't exist
                 var newUser = new UserModel()
                 {
                     Id = "U-" + Guid.NewGuid().ToString("N"),
                     GoogleUserId = googleUserId,
-                    Email = userEmail,
-                    UserName = userName,
+                    Email = payload.Email,
+                    UserName = payload.Name,
+                    ProfilePicture = payload.Picture,
                 };
 
                 UserConstants.Users.Add(newUser);
+
+                foundUser = newUser;
             }
 
             // Redirect the user to the specified URL or a default page
-            return LocalRedirect(returnUrl);
+            return Ok(new returnUserModel(foundUser));
         }
 
         [AllowAnonymous]
-        [HttpGet("PasswordLogin")]
-        public IActionResult PasswordLogin(UserLogin userLogin)
+        [HttpPost("PasswordLogin")]
+        public IActionResult PasswordLogin(UserPasswordModel userPasswordModel)
         {
-            if (userLogin == null)
+            if (userPasswordModel == null)
             {
                 return Unauthorized("Missing user info!");
             }
 
-            var foundUser = UserConstants.Users.FirstOrDefault(u => u.Email == userLogin.Email && u.Password == userLogin.Password);
+            var foundUser = UserConstants.Users.FirstOrDefault(u => u.Email == userPasswordModel.Email && u.Password == userPasswordModel.Password);
 
             if (foundUser == null)
             {
                 return Unauthorized("User not found!");
             }
 
-            return Ok(foundUser);
+            return Ok(new returnUserModel(foundUser));
         }
 
-        public class UserLogin
+        public class UserPasswordModel
         {
             [Required]
             public string Email { get; set; }
 
             [Required]
             public string Password { get; set; }
+        }
+
+        public class returnUserModel
+        {
+            public string UserName { get; set; }
+            public string? ProfilePicture { get; set; }
+            public returnUserModel(UserModel user)
+            {
+                UserName = user.UserName;
+                ProfilePicture = user.ProfilePicture;
+            }
+
         }
     }
 }

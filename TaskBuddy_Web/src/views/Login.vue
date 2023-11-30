@@ -1,14 +1,70 @@
 <script lang="ts">
 export default {
+  data() {
+    return {
+      formData: {
+        email: '',
+        password: '',
+        // Add other form fields here
+      }
+    };
+  },
   methods: {
-    test(response: any) {
-      console.log(response)
+    submitGoogleLogin(response: any) {
+      console.log(response);
+
+      fetch(`${import.meta.env.VITE_ROOT_API}/Account/GoogleLogin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(response.credential)
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    },
+    submitPasswordLogin(event: Event) {
+      event.preventDefault();
+
+      fetch(`${import.meta.env.VITE_ROOT_API}/Account/PasswordLogin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: this.formData.email,
+          password: this.formData.password
+        })
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+        })
+        .catch(error => {
+          console.error(error);
+        });
     },
   },
   mounted() {
-    let externalScript = document.createElement('script')
-    externalScript.setAttribute('src', 'https://accounts.google.com/gsi/client')
-    document.head.appendChild(externalScript)
+    google.accounts.id.initialize({
+      client_id: '855538175583-u7r1nr0afi8907ut4p30kbh7m0cmifeo.apps.googleusercontent.com',
+      callback: this.submitGoogleLogin
+    });
+
+    const submitBtn = this.$refs.submit_btn as HTMLButtonElement;
+
+    const googleBtn = document.getElementById('google_btn');
+    google.accounts.id.renderButton(googleBtn, {
+      theme: "outline",
+      logo_alignment: "left",
+      size: "large",
+      width: submitBtn.offsetWidth + "px"
+    });
   },
 };
 </script>
@@ -16,28 +72,24 @@ export default {
 <template>
   <div class="login">
     <picture>
-      <!-- <source srcset="/TaskBuddy_logo_dark.svg" media="(prefers-color-scheme: dark)" /> -->
+      <source srcset="/TaskBuddy_logo_dark.svg" media="(prefers-color-scheme: dark)" />
       <img src="/TaskBuddy_logo.svg" alt="TaskBuddy logo" height="300" width="300" />
     </picture>
 
-    <form action="" class="login-form">
+    <form class="login-form" @submit="submitPasswordLogin">
       <div class="input-box">
-        <input type="text" name="username" id="usename" required />
-        <label for="username">Username</label>
+        <input type="text" name="email" id="email" v-model="formData.email"
+          pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$" placeholder="" required />
+        <label for="email">Email</label>
       </div>
       <div class="input-box">
-        <input type="password" name="password" id="password" required />
+        <input type="password" name="password" id="password" v-model="formData.password" placeholder="" required />
         <label for="password">Password</label>
       </div>
-      <button type="submit">Login</button>
+      <button ref="submit_btn" type="submit" class="submit-button" data-status="normal">Login</button>
     </form>
 
-    <div id="g_id_onload" data-client_id="855538175583-u7r1nr0afi8907ut4p30kbh7m0cmifeo.apps.googleusercontent.com"
-      data-context="signin" data-ux_mode="popup" @data-callback="test" data-itp_support="true">
-    </div>
-
-    <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with"
-      data-size="large" data-logo_alignment="left">
+    <div id="google_btn">
     </div>
 
     <div class="signup">
@@ -69,56 +121,8 @@ picture {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   width: 300px;
-}
-
-.input-box {
-  position: relative;
-  width: 100%;
-}
-
-.input-box input {
-  width: 100%;
-  padding: 10px;
-  box-sizing: border-box;
-  border: none;
-  border-bottom: 1px solid black;
-  outline: none;
-  margin-bottom: 1.5em;
-}
-
-.input-box label {
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 10px;
-  pointer-events: none;
-  transition: all 0.3s ease-in-out;
-}
-
-.input-box input:focus~label,
-.input-box input:valid~label {
-  font-size: 0.8em;
-  transform: translate(-10px, calc(-1 * (1em + 10px + 5px)));
-  /* font size + padding + extra space */
-}
-
-.login-form button {
-  width: 100%;
-  padding: 10px;
-  box-sizing: border-box;
-  border: none;
-  outline: none;
-  font-weight: bold;
-  cursor: pointer;
-  margin-bottom: 1.5em;
-  transition: all 0.3s ease-in-out;
-}
-
-.login-form button:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 .signup {
@@ -134,18 +138,5 @@ picture {
   margin-bottom: 0.2em;
 }
 
-@media (prefers-color-scheme: dark) {
-  .input-box input {
-    border-bottom: 1px solid white;
-  }
-
-  .input-box input:focus {
-    border-bottom: 1px solid yellow;
-  }
-
-  .input-box input:focus~label,
-  .input-box input:valid~label {
-    color: var(--primary-color);
-  }
-}
+@media (prefers-color-scheme: dark) {}
 </style>

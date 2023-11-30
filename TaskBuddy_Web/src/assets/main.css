@@ -12,9 +12,24 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 
-  --background-color: white;
-  --secondary-color: #f4f4f4;
-  --primary-color: yellow;
+  --black-background: 36, 36, 36;
+  --white-background: 240, 240, 240;
+
+  --background-color: var(--white-background);
+  --secondary-color: 245, 245, 245;
+  --primary-color: 255, 255, 0;
+
+  --text-color: 0, 0, 0;
+  --inverted-text-color: 255, 255, 255;
+
+  --accurate-color: 0, 255, 0;
+  --inaccurate-color: 255, 0, 0;
+
+  --border-radius: 8px;
+}
+
+* {
+  color: rgba(var(--text-color), 1);
 }
 
 a {
@@ -22,6 +37,7 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -44,7 +60,7 @@ body {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  background: var(--background-color);
+  background: rgba(var(--background-color), 1);
 }
 
 h1 {
@@ -53,26 +69,120 @@ h1 {
 }
 
 button {
-  background: var(--primary-color);
-  font-size: medium;
+  background: rgba(var(--primary-color), 1);
   border: none;
-  height: 40px;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
+  color: rgba(var(--inverted-text-color), 1);
 }
 
 input {
-  background: var(--secondary-color);
-  color: black;
-  font-size: larger;
+  background: rgba(var(--inverted-background-color), 0.05);
+  color: var(--text-color);
+  font-size: medium;
+  line-height: normal;
+  border-radius: var(--border-radius);
 }
 
 h2 {
   margin: 0;
 }
 
-.card {
-  padding: 2em;
+.input-box {
+  position: relative;
+  width: 100%;
+}
+
+.input-box input {
+  height: auto;
+  width: calc(100% - 20px);
+  padding: 10px;
+  border: none;
+  --bottom-border-color: var(--primary-color);
+  --bottom-border-opacity: 0.2;
+  border-bottom: 3px solid
+    rgba(var(--bottom-border-color), var(--bottom-border-opacity));
+  outline: none;
+  margin: 0.9em 0;
+  transition: all 0.3s ease-in-out;
+}
+
+.input-box input:focus {
+  --bottom-border-opacity: 1;
+}
+
+/* empty input */
+.input-box input {
+  --bottom-border-color: var(--primary-color);
+}
+
+/* invalid input */
+.input-box input:not(:placeholder-shown):invalid {
+  --bottom-border-color: var(--inaccurate-color);
+}
+
+/* valid input */
+.input-box input:not(:placeholder-shown):valid {
+  --bottom-border-color: var(--accurate-color);
+}
+
+.input-box label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 10px;
+  margin: 0.9em 0;
+  pointer-events: none;
+  transition: all 0.3s ease-in-out;
+}
+
+/* label when input is focus or not empty */
+.input-box input:focus ~ label,
+.input-box input:not(:placeholder-shown) ~ label {
+  font-size: 0.85em;
+  transform: translate(-8px, calc(-1 * (1em + 10px + 2px)));
+  /* font size + padding + extra space */
+}
+
+.submit-button {
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  font-size: large;
+  font-weight: bold;
+  margin: 0.5em 0;
+  transition: all 0.3s ease-in-out;
+}
+
+/* no input */
+form:has(input[required]:invalid) .submit-button[data-status="normal"] {
+  background: rgba(var(--primary-color), 0.5);
+  cursor: not-allowed;
+}
+
+.submit-button {
+  background: rgba(var(--primary-color), 1);
+  cursor: pointer;
+}
+
+.submit-button[data-status="processing"] {
+  background: rgba(var(--secondary-color), 0.5);
+  cursor: wait;
+}
+
+.submit-button[data-status="success"] {
+  background: rgba(var(--accurate-color), 0.5);
+  cursor: not-allowed;
+}
+
+.submit-button[data-status="error"] {
+  background: rgba(var(--inaccurate-color), 0.5);
+  cursor: pointer;
+}
+
+.submit-button[data-status="normal"]:hover,
+.submit-button[data-status="error"]:hover {
+  background: rgba(var(--primary-color), 0.8);
 }
 
 #app {
@@ -88,16 +198,10 @@ h2 {
 
 @media (prefers-color-scheme: dark) {
   :root {
-    color: white;
-    --background-color: #242424;
-    --secondary-color: #2f2f2f;
-  }
-
-  a:hover {
-    color: #535bf2;
-  }
-
-  input {
-    color: white;
+    --section-background: 48, 48, 48;
+    --background-color: var(--black-background);
+    --inverted-background-color: var(--white-background);
+    --text-color: 255, 255, 255;
+    --inverted-text-color: 0, 0, 0;
   }
 }

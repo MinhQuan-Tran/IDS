@@ -99,7 +99,7 @@ main {
 
 main>* {
   background: var(--secondary);
-  border-radius: 10px;
+  border-radius: var(--background-color);
   padding: 10px;
   box-sizing: border-box;
   width: 100%;

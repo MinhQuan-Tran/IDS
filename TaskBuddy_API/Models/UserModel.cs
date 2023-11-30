@@ -17,5 +17,7 @@ namespace TaskBuddy_API.Models
 
         [Required]
         public string UserName { get; set; }
+
+        public string? ProfilePicture { get; set; }
     }
 }
